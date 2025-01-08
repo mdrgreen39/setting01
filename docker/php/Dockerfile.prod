@@ -1,0 +1,45 @@
+FROM php:8.2-fpm AS base
+
+ENV TZ=Asia/Tokyo
+
+# 不要な開発ツールを削除し、本番環境に必要なパッケージのみインストール
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+    curl cron libzip-dev libonig-dev libicu-dev libjpeg62-turbo-dev libpng-dev default-mysql-client \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# 必要なPHP拡張をインストール
+RUN docker-php-ext-install zip pdo_mysql mysqli mbstring gd iconv bcmath
+
+# Composerのインストール
+FROM composer:2.5.8 AS composer
+
+# PHPとComposerを統合
+FROM base AS final
+
+COPY --from=composer /usr/bin/composer /usr/bin/composer
+
+COPY php.ini /usr/local/etc/php/php.ini
+
+WORKDIR /var/www
+
+# cronfileを追加
+COPY ./cronfile /etc/cron.d/cronfile
+
+# cronfileのパーミッションを設定
+RUN chmod 0644 /etc/cron.d/cronfile
+
+# cronサービスをリスタート
+RUN crontab /etc/cron.d/cronfile
+
+# cronサービスとphp-fpmを起動するスクリプトを追加
+COPY start.sh /start.sh
+RUN chmod +x /start.sh
+
+# Composerで依存関係をインストール（本番用）
+RUN composer install --no-dev --optimize-autoloader --prefer-dist --no-interaction --no-progress \
+    && rm -rf /root/.composer/cache
+
+# 最終的なコマンド
+CMD ["/start.sh"]

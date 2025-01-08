@@ -1,0 +1,89 @@
+services:
+  # Laravel PHPコンテナ
+  php:
+    build:
+      context: ./docker/php
+      dockerfile: Dockerfile
+    volumes:
+      - ./src/laravel:/var/www
+    networks:
+      - app-network
+
+  # nginx（バックエンドのプロキシ）
+  nginx:
+    image: nginx:1.24.0
+    ports:
+      - "80:80"
+    volumes:
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - ./src/laravel:/var/www
+    networks:
+      - app-network
+    depends_on:
+      - php
+
+  # MySQLデータベース
+  mysql:
+    image: mysql:8.0.37
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      - ./docker/mysql/data:/var/lib/mysql
+      - ./docker/mysql/my.cnf:/etc/mysql/conf.d/my.cnf
+    networks:
+      - app-network
+
+  # phpMyAdmin（開発環境用）
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    environment:
+      PMA_ARBITRARY: 1
+      PMA_HOST: mysql
+      PMA_USER: ${MYSQL_USER}
+      PMA_PASSWORD: ${MYSQL_PASSWORD}
+    ports:
+      - "8080:80"
+    networks:
+      - app-network
+    depends_on:
+      - mysql
+
+  redis:
+    image: redis:alpine
+    networks:
+      - app-network
+
+  queue-worker:
+    build:
+      context: ./docker/php
+      dockerfile: Dockerfile
+    command: php /var/www/artisan queue:work --sleep=3 --tries=3
+    volumes:
+      - ./src/laravel:/var/www
+    networks:
+      - app-network
+    depends_on:
+      - redis
+      - mysql
+    restart: unless-stopped
+
+  # Nuxt.js（フロントエンド）
+  nuxt:
+    build:
+      context: ./docker/nuxt
+      dockerfile: Dockerfile
+    volumes:
+      - ./src/nuxt:/usr/src/app
+    ports:
+      - "3000:3000"
+    networks:
+      - app-network
+    depends_on:
+      - php
+
+networks:
+  app-network:
+    driver: bridge

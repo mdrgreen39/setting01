@@ -1,0 +1,21 @@
+# ベースイメージ
+FROM node:18-alpine
+
+# 作業ディレクトリ
+WORKDIR /usr/src/app
+
+# パッケージインストール
+COPY ./package*.json ./
+RUN npm install --production
+
+# アプリケーションコードコピー
+COPY . .
+
+# ビルド（SSR対応）
+RUN npm run build
+
+# ポート公開
+EXPOSE 3000
+
+# SSRサーバー起動コマンド
+CMD ["npm", "run", "start"]

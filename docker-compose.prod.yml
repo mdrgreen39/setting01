@@ -1,0 +1,70 @@
+services:
+  php:
+    build:
+      context: ./docker/php
+      dockerfile: Dockerfile.prod
+    volumes:
+      - ./src/laravel:/var/www/
+    networks:
+      - app-network
+
+  nginx:
+    image: nginx:1.24.0
+    ports:
+      - "80:80"
+    volumes:
+      - ./docker/nginx/production.conf:/etc/nginx/conf.d/production.conf
+      - ./src/laravel:/var/www/
+    networks:
+      - app-network
+    depends_on:
+      - php
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    environment:
+      PMA_ARBITRARY:
+      PMA_HOST:
+      PMA_USER:
+      PMA_PASSWORD:
+    networks:
+      - app-network
+    depends_on:
+      - nginx
+    ports:
+      - 8080:80
+
+  redis:
+    image: redis:alpine
+    networks:
+      - app-network
+
+  queue-worker:
+    build:
+      context: ./docker/php
+      dockerfile: Dockerfile.prod
+    command: php /var/www/artisan queue:work --sleep=3 --tries=3
+    volumes:
+      - ./src/laravel:/var/www
+    networks:
+      - app-network
+    depends_on:
+      - redis
+    restart: unless-stopped
+
+  nuxt:
+    build:
+      context: ./docker/nuxt
+      dockerfile: Dockerfile.prod
+    environment:
+      NODE_ENV: production
+    ports:
+      - "3000:3000"
+    depends_on:
+      - php
+      - redis
+    restart: always
+
+networks:
+  app-network:
+    driver: bridge
