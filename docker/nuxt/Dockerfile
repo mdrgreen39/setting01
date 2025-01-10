@@ -1,17 +1,21 @@
-# ベースイメージ
+# Node.jsのイメージを指定
 FROM node:18-alpine
 
-# 作業ディレクトリを作成
+# 作業ディレクトリを設定
 WORKDIR /usr/src/app
 
-# パッケージをコピーしてインストール
-COPY package*.json ./
+# 必要なファイルをコピー（ローカルの ./src/nuxt をコンテナの /usr/src/app にコピー）
+COPY ./src/nuxt /usr/src/app/src/nuxt
 
-# 開発用依存パッケージをインストール
+
+# /src/nuxt 内に移動
+WORKDIR /usr/src/app/src/nuxt
+
+# npm installを実行
 RUN npm install
 
-# アプリケーションコードをコピー
-COPY . .
+# アプリをビルド
+RUN npm run build
 
-# デフォルトコマンド (Nuxt 開発モード)
-CMD ["npm", "run", "dev"]
+# サーバーを起動
+CMD ["npm", "run", "start"]

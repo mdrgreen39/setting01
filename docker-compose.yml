@@ -26,10 +26,10 @@ services:
   mysql:
     image: mysql:8.0.37
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: laravel_db
+      MYSQL_USER: laravel_user
+      MYSQL_PASSWORD: laravel_pass
     volumes:
       - ./docker/mysql/data:/var/lib/mysql
       - ./docker/mysql/my.cnf:/etc/mysql/conf.d/my.cnf
@@ -42,8 +42,8 @@ services:
     environment:
       PMA_ARBITRARY: 1
       PMA_HOST: mysql
-      PMA_USER: ${MYSQL_USER}
-      PMA_PASSWORD: ${MYSQL_PASSWORD}
+      PMA_USER: laravel_user
+      PMA_PASSWORD: laravel_pass
     ports:
       - "8080:80"
     networks:
@@ -73,8 +73,8 @@ services:
   # Nuxt.js（フロントエンド）
   nuxt:
     build:
-      context: ./docker/nuxt
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./docker/nuxt/Dockerfile
     volumes:
       - ./src/nuxt:/usr/src/app
     ports:

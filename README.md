@@ -1,5 +1,81 @@
 # setting01
 ## 環境構築
+### Gitをクローンしてプロジェクトを設定
+#### 1.リポジトリをクローン
+- まずは GitHub にある基本設計のリポジトリをローカル環境にクローンします。
+``` bash
+git clone git@github.com:mdrgreen39/setting01.git
+```
+#### 2.プロジェクト名を変更
+``` bash
+mv setting01 new-project-name
+```
+
+#### 3.リモートリポジトリを設定
+- 新しいプロジェクト用に GitHub 上でリモートリポジトリを作成し、ローカルリポジトリにそのリモートリポジトリを紐づけます。
+``` bash
+git remote set-url origin git@github.com:your-username/new-repository.git
+
+```
+#### 4.必要に応じて初期設定を変更
+- プロジェクトの基本設定（例: .gitignore や README.md など）を編集し、初期化を完了します。
+
+### Nuxtインストール
+#### 1.src/nuxt ルートで Nuxt.js を初期設定 (Nuxt 3)
+``` bash
+npx nuxi init .
+```
+#### 2.
+- Project name 入力
+- TypeScript
+- Tailwind Css
+- HTML
+- Axios
+- EsLint Prettier
+- Jest
+- jsconfig.json
+- GitHub Actions
+- Git
+
+#### 3.
+``` bash
+npm install
+```
+#### 4.nuxt.config.ts
+``` bash
+// https://nuxt.com/docs/api/configuration/nuxt-config
+import { defineNuxtConfig } from 'nuxt/config'
+import { types } from 'util'  // util モジュールから cloneDeep をインポート
+import { cloneDeep } from 'lodash';
+
+export default defineNuxtConfig({
+  compatibilityDate: '2024-11-01',
+  devtools: { enabled: true },
+  hooks: {
+    'build:before': () => {
+      if (typeof structuredClone === 'undefined') {
+        globalThis.structuredClone = cloneDeep;  // structuredClone が未定義なら cloneDeep を代わりに使う
+      }
+    }
+  }
+})
+```
+nuxt/config にする
+#### 5.lodash パッケージをインストールし、そこから cloneDeep をインポートする
+``` bash
+npm install lodash
+
+```
+#### 6.@types/lodash をインストール
+``` bash
+npm install --save-dev @types/lodash
+
+```
+#### 7.package.json の scripts セクションを確認し、start スクリプトを定義する
+``` bash
+"start": "nuxt start",
+```
+
 ### Dockerビルド
 #### 1.
 ``` bash
@@ -8,7 +84,7 @@ git clone git@github.com:mdrgreen39/setting01.git
 #### 2. DockerDesktopアプリを立ち上げる
 #### 3.
 ``` bash
-docker　compose up -d --build
+docker compose up -d --build
 ```
 
 > *MacのM1・M2チップのPCの場合、`no matching manifest for linux/arm64/v8 in the manifest list entries`のメッセージが表示されビルドができないことがあります。
@@ -111,3 +187,7 @@ ls -la storage
 ```
 > 出力例:`drwxrwxr-x  2 user group 4096 Oct 11 12:00 app`
    3. 問題が解決されない場合: 必要に応じて、サーバーの設定を見直し、適切なパーミッションが設定されているか再確認してください。
+
+#### 1.
+``` bash
+```
