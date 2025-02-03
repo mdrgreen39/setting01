@@ -1,3 +1,7 @@
+docker/mysql/data/*
 !.gitkeep
 /.DS_Store
 *.code-workspace
+docker-compose.prod.yml
+docker/nginx/production.conf
+docker/php/Dockerfile.prod

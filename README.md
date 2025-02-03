@@ -91,7 +91,7 @@ docker compose up -d --build
 エラーが発生する場合は、docker-compose.ymlファイルの「mysql」内に「platform」の項目を追加で記載してください*
 ``` bash
 mysql:
-    platform: linux/x86_64(この文を追加)
+  platform: linux/x86_64(この文を追加)
     image: mysql:8.0.37
     environment:
 ```
