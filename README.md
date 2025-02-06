@@ -21,11 +21,14 @@ git remote set-url origin git@github.com:your-username/new-repository.git
 - プロジェクトの基本設定（例: .gitignore や README.md など）を編集し、初期化を完了します。
 
 ### Nuxtインストール
+nuxtディレクトリを作っておく必要はない。作らずにsrcルートでコマンドを実行すればディレクトリは作られる。
 #### 1.src/nuxt ルートで Nuxt.js を初期設定 (Nuxt 3)
 ``` bash
 npx nuxi init .
 ```
 #### 2.
+- パッケージ選択(npm(初心者ならデフォルトでOK) or pnpm(速度重視) or yarn(チームで使ってるなら))
+- gitリポジトリ初期化選択
 - Project name 入力
 - TypeScript
 - Tailwind Css
@@ -41,6 +44,7 @@ npx nuxi init .
 ``` bash
 npm install
 ```
+### 4から6についてはインストールするもによって実行するかしないか変わる。Nuxt3は必要なものを手動でインストールする
 #### 4.nuxt.config.ts
 ``` bash
 // https://nuxt.com/docs/api/configuration/nuxt-config
@@ -75,14 +79,16 @@ npm install --save-dev @types/lodash
 ``` bash
 "start": "nuxt start",
 ```
+追加？
+``` bash
+"optionalDependencies": {
+    "@rollup/rollup-linux-x64-musl": "^4.34.2"
+}
+```
 
 ### Dockerビルド
-#### 1.
-``` bash
-git clone git@github.com:mdrgreen39/setting01.git
-```
-#### 2. DockerDesktopアプリを立ち上げる
-#### 3.
+#### 1. DockerDesktopアプリを立ち上げる
+#### 2.
 ``` bash
 docker compose up -d --build
 ```
@@ -100,6 +106,27 @@ platform: linux/x86_64
 ```
 > *Dockerコンテナをビルドした後に、vendor ディレクトリが生成されていないため、composer install を実行して依存関係をインストールする必要があります。queue-workerコンテナの`STATUS`が`Restarting`でもそのまま次の手順`composer install`を実行し、実行後に再度dockerコンテナの状態を確認してください。*
 
+### 参考。nuxtの依存関係でうまくいかない時
+#### 1.コンテナ内で`npm install`する
+``` bash
+docker compose exec nuxt bash
+```
+``` bash
+docker compose run --rm nuxt sh
+```
+#### 2.
+``` bash
+npm install
+```
+#### 3.ルートに戻ってコンテナ内を完全にリセット
+``` bash
+docker compose down
+```
+#### 4.
+``` bash
+docker compose up -d --build
+```
+
 ### Laravel環境構築
 #### 1.
 ``` bash
@@ -107,7 +134,7 @@ docker compose exec php bash
 ```
 #### 2.
 ``` bash
-composer install
+composer create-project --prefer-dist laravel/laravel src/laravel "10.*"
 ```
 #### 3. `.env.example`ファイルを `.env`ファイルに命名を変更。または、新しく`.env`ファイルを作成
 - `.env`に以下の環境変数を追加
