@@ -85,6 +85,7 @@ npm install --save-dev @types/lodash
     "@rollup/rollup-linux-x64-musl": "^4.34.2"
 }
 ```
+#### 8.eslint・prettierをインストール
 
 ### Dockerビルド
 #### 1. DockerDesktopアプリを立ち上げる
@@ -97,7 +98,7 @@ docker compose up -d --build
 エラーが発生する場合は、docker-compose.ymlファイルの「mysql」内に「platform」の項目を追加で記載してください*
 ``` bash
 mysql:
-  platform: linux/x86_64(この文を追加)
+  platform: linux/amd64(この文を追加)
     image: mysql:8.0.37
     environment:
 ```
@@ -150,7 +151,80 @@ LIVEWIRE_DEBUG=true           //追加
 STORAGE_URL=http://localhost  //追加
 ```
 
-#### 4. アプリケーションキーの作成
+#### 3. `.env.example`ファイルを `.env.testing`ファイルに命名を変更。または、新しく`.env.testing`ファイルを作成※テスト用DB設定をする
+- `.env`に以下の環境変数を追加
+``` text
+APP_ENV=testing
+DB_CONNECTION=mysql_test
+DB_HOST=mysql_test
+DB_PORT=3306
+DB_DATABASE=test_db
+DB_USERNAME=test_user
+DB_PASSWORD=test_pass
+QUEUE_CONNECTION=database ?
+LIVEWIRE_DEBUG=true        ?   //追加
+STORAGE_URL=http://localhost ?  //追加
+```
+
+以下をapp/config/database.phpに追加
+``` text
+'mysql_test' => [
+            'driver' => 'mysql',
+            'host' => env('DB_HOST', 'mysql_test'),
+            'port' => env('DB_PORT', '3306'),
+            'database' => env('DB_DATABASE', 'test_db'),
+            'username' => env('DB_USERNAME', 'test_user'),
+            'password' => env('DB_PASSWORD', 'test_pass'),
+            'unix_socket' => env('DB_SOCKET', ''),
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'strict' => true,
+            'engine' => null,
+        ],
+```
+phpunit.xml
+``` text
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+         bootstrap="vendor/autoload.php"
+         colors="true"
+>
+    <testsuites>
+        <testsuite name="Unit">
+            <directory>./tests/Unit</directory>
+        </testsuite>
+        <testsuite name="Feature">
+            <directory>./tests/Feature</directory>
+        </testsuite>
+    </testsuites>
+    <coverage processUncoveredFiles="true">
+        <include>
+            <directory>./app</directory>
+        </include>
+    </coverage>
+    <php>
+        <env name="APP_ENV" value="testing"/>
+        <env name="BCRYPT_ROUNDS" value="4"/>
+        <env name="CACHE_DRIVER" value="array"/>
+        <env name="DB_CONNECTION" value="mysql_test"/>
+        <env name="DB_DATABASE" value="test_db"/>
+        <env name="DB_USERNAME" value="test_user"/>
+        <env name="DB_PASSWORD" value="test_pass"/>
+        <env name="DB_PORT" value="3307"/>
+        <env name="MAIL_MAILER" value="array"/>
+        <env name="PULSE_ENABLED" value="false"/>
+        <env name="QUEUE_CONNECTION" value="sync"/>
+        <env name="SESSION_DRIVER" value="array"/>
+        <env name="TELESCOPE_ENABLED" value="false"/>
+    </php>
+</phpunit>
+
+```
+
+#### 4. アプリケーションキーの作成 .env .env.testing　それぞれで作成
 ``` bash
 php artisan key:generate
 ```
